@@ -8,6 +8,9 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.get('/', (req, res) => {
+  res.json({ message: 'Disponibilitat Calendar API is running' });
+});
 
 mongoose.connect(process.env.MONGODB_URI);
 
