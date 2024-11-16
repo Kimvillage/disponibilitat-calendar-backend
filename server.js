@@ -12,7 +12,9 @@ app.get('/', (req, res) => {
   res.json({ message: 'Disponibilitat Calendar API is running' });
 });
 
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 const CalendarSchema = new mongoose.Schema({
   dates: {
