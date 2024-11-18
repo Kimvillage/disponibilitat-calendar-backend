@@ -1,64 +1,32 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3001;
+
+// CORS config - Permetre Vercel
+app.use(cors({
+  origin: ['https://disponibilitat-calendar-frontend.vercel.app', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
+
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kimvillage:PASSWORD@cluster0.cqdft.mongodb.net/calendari?retryWrites=true&w=majority';
+
+// Test route
 app.get('/', (req, res) => {
-  res.json({ message: 'Disponibilitat Calendar API is running' });
+  res.json({ 
+    message: 'API de Calendari de Disponibilitat',
+    status: 'running'
+  });
 });
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// ... resta del codi igual ...
 
-const CalendarSchema = new mongoose.Schema({
-  dates: {
-    type: Map,
-    of: {
-      status: {
-        type: String,
-        enum: ['none', 'morning', 'afternoon', 'full_day', 'bolo'],
-        default: 'none'
-      }
-    }
-  }
-});
-
-const Calendar = mongoose.model('Calendar', CalendarSchema);
-
-app.get('/api/calendar', async (req, res) => {
-  try {
-    let calendar = await Calendar.findOne();
-    if (!calendar) {
-      calendar = await Calendar.create({ dates: {} });
-    }
-    res.json(calendar.dates.toJSON());
-  } catch (error) {
-    res.status(500).json({ message: 'Error getting calendar data' });
-  }
-});
-
-app.post('/api/calendar', async (req, res) => {
-  try {
-    let calendar = await Calendar.findOne();
-    if (!calendar) {
-      calendar = await Calendar.create({ dates: req.body });
-    } else {
-      calendar.dates = req.body;
-      await calendar.save();
-    }
-    res.status(200).json({ message: 'Calendar updated successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating calendar data' });
-  }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
